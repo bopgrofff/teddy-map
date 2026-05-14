@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Roosevelt Interactive Map</title>
+
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet"/>
+
+  <style>
+    body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+
+    #map {
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .mapboxgl-popup-content {
+      max-width: 250px;
+    }
+
+    #legend {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: white;
+      padding: 10px;
+      font-size: 12px;
+      border-radius: 6px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+    }
+
+   #header {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 500px;
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.2);
+  text-align: center;
+}
+
+#header h1 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+#header p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+  </style>
+</head>
+
+<body>
+
+<div id="map"></div>
+
+<div id="header">
+  <h1>The Roosevelt Legacy in the Northeast</h1>
+  <p>
+    This interactive map explores key sites connected to Theodore Roosevelt, Franklin D. Roosevelt, and their broader network of influence. 
+    From conservation and national parks to labor reform and political transformation, these locations reveal how the Roosevelt legacy shaped the American landscape and national identity.
+  </p>
+</div>
+
+<div id="legend">
+  <strong>Legend</strong><br>
+  <div><span style="color:black;">●</span> Theodore Roosevelt</div>
+  <div><span style="color:blue;">●</span> FDR</div>
+  <div><span style="color:purple;">●</span> Eleanor Roosevelt</div>
+  <div><span style="color:green;">●</span> Frances Perkins</div>
+</div>
+
+<script>
+
+mapboxgl.accessToken = 'pk.eyJ1IjoiYm9wZ3JvZmYiLCJhIjoiY21wNXJobHY3MTNmMTJyb2FzOXkybmVyNCJ9.s9-dGP9dvALml_CJhtKk8A';
+
+const map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/mapbox/light-v11',
+  center: [-73.5, 43],
+  zoom: 5.8,
+  minZoom: 5,
+  maxBounds: [
+    [-82, 37],
+    [-66, 48]
+  ]
+});
+
+const locations = [
+  {
+    name: "Theodore Roosevelt Birthplace",
+    coords: [-73.9876, 40.7387],
+    description: "The birthplace of Theodore Roosevelt in New York City offers insight into the early life of the 26th president. Born into a wealthy family, Roosevelt overcame childhood illness through physical discipline, developing the philosophy of the 'strenuous life' that would later define his presidency and conservation efforts.",
+    color: "black",
+    image: "https://www.nps.gov/common/uploads/banner_image/ner/homepage/185C0F94-1DD8-B71B-0BC217328653DCAC.jpg",
+    link: "https://www.nps.gov/thrb/index.htm"
+  },
+  {
+    name: "Theodore Roosevelt Inaugural Site",
+    coords: [-78.8736, 42.8864],
+    description: "Located in Buffalo, this site marks the moment Theodore Roosevelt assumed the presidency in 1901 following the assassination of William McKinley. His sudden rise to power ushered in a new era of progressive reform and a strengthened federal role in conservation and public welfare.",
+    color: "black",
+    image: "https://www.trsite.org/app/uploads/2025/04/Vector_placeholder-1536x1079.jpg",
+    link: "https://www.nps.gov/thri/index.htm"
+  },
+  {
+    name: "Sagamore Hill",
+    coords: [-73.503, 40.885],
+    description: "Sagamore Hill in Oyster Bay served as Theodore Roosevelt’s home and Summer White House. From here, Roosevelt conducted presidential business while shaping policies that emphasized conservation, trust-busting, and a more active executive branch.",
+    color: "black",
+    image: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/08/a5/dd/69/sagamore-hill.jpg?w=900&h=-1&s=1",
+    link: "https://www.nps.gov/sahi/index.htm"
+  },
+  {
+    name: "Home of FDR",
+    coords: [-73.934, 41.767],
+    description: "The Home of Franklin D. Roosevelt in Hyde Park reflects the life of the 32nd president, who expanded the federal government’s role during the Great Depression. This site illustrates how FDR drew on personal resilience and political innovation to reshape American society.",
+    color: "blue",
+    image: "https://npplan.com/wp-content/uploads/2025/03/Home-of-FDR-057.jpg",
+    link: "https://www.nps.gov/hofr/index.htm"
+  },
+  {
+    name: "Eleanor Roosevelt National Historic Site",
+    coords: [-73.897, 41.762],
+    description: "Val-Kill, the home of Eleanor Roosevelt, represents her emergence as a major political and social figure. Here she developed her independent voice, advocating for human rights, social reform, and an expanded role for women in public life.",
+    color: "purple",
+    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ87bLjL6-EQY-2QtJdbK7HkN-CgHbmqP9XZA&s",
+    link: "https://www.nps.gov/elro/index.htm"
+  },
+  {
+    name: "Campobello Island",
+    coords: [-66.988, 44.902],
+    description: "Roosevelt Campobello International Park preserves the summer home where Franklin D. Roosevelt spent his formative years. The island environment helped shape his love of nature and outdoor life, reinforcing the conservation values central to the Roosevelt legacy.",
+    color: "blue",
+    image: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/24/2f/1d/2f/head-harbour-lightstation.jpg?w=900&h=500&s=1",
+    link: "https://www.nps.gov/roca/index.htm"
+  },
+  {
+    name: "Frances Perkins National Monument",
+    coords: [-69.541, 43.862],
+    description: "This site honors Frances Perkins, the first woman to serve in a U.S. presidential cabinet and a key architect of New Deal labor reforms. Her close partnership with FDR helped establish policies that improved working conditions and expanded social protections.",
+    color: "green",
+    image: "https://npca.s3.amazonaws.com/images/19206/fb242425-ffbc-4b84-a755-e32acd55e06f-banner.jpg?1721250547",
+    link: "https://www.nps.gov/frpe/index.htm"
+  },
+  {
+    name: "Acadia National Park",
+    coords: [-68.273, 44.338],
+    description: "Acadia National Park reflects the broader conservation movement championed during Theodore Roosevelt’s presidency. While not created directly by him, it represents the lasting impact of his efforts to preserve natural landscapes for public use.",
+    color: "black",
+    image: "https://upload.wikimedia.org/wikipedia/commons/e/e9/Acadia_National_Park_02.JPG",
+    link: "https://www.nps.gov/acad/index.htm"
+  }
+];
+
+locations.forEach(loc => {
+
+  const el = document.createElement('div');
+  el.style.width = '12px';
+  el.style.height = '12px';
+  el.style.backgroundColor = loc.color;
+  el.style.borderRadius = '50%';
+
+  const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
+    <h3>${loc.name}</h3>
+    <img src="${loc.image}" style="width:100%; border-radius:6px; margin:5px 0;" />
+    <p>${loc.description}</p>
+    <a href="${loc.link}" target="_blank">View on NPS website</a>
+  `);
+
+  new mapboxgl.Marker(el)
+    .setLngLat(loc.coords)
+    .setPopup(popup)
+    .addTo(map);
+
+});
+
+</script>
+
+</body>
+</html>
