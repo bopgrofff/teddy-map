@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>The Roosevelt Legacy in the Northeast</title>
+
+  <style>
+
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #d8c7ac;
+      font-family: Georgia, serif;
+    }
+
+    /* MAIN CONTAINER */
+    #map-container {
+
+      position: relative;
+
+      width: 100vw;
+      height: 100vh;
+
+      overflow: hidden;
+
+      background: #d8c7ac;
+
+      cursor: grab;
+
+    }
+
+    #map-container:active {
+      cursor: grabbing;
+    }
+
+    /* ZOOMABLE LAYER */
+    #zoom-layer {
+
+      position: relative;
+
+      width: 100%;
+      height: 100%;
+
+      transform-origin: 0 0;
+
+      transition: transform 0.08s linear;
+
+    }
+
+    /* BACKGROUND MAP */
+    #map-image {
+
+      width: 100%;
+      height: 100%;
+
+      object-fit: cover;
+
+      display: block;
+
+      user-select: none;
+      pointer-events: none;
+
+    }
+
+    /* HEADER */
+    #header {
+
+      position: absolute;
+
+      top: 26px;
+      left: 50%;
+
+      transform: translateX(-50%);
+
+      width: 430px;
+
+      background: rgba(241,230,213,0.95);
+
+      padding: 18px;
+
+      border-radius: 12px;
+
+      box-shadow: 0 8px 26px rgba(0,0,0,0.16);
+
+      text-align: center;
+
+      z-index: 500;
+
+      border: 1px solid rgba(100,80,50,0.15);
+
+      backdrop-filter: blur(4px);
+
+    }
+
+    #header h1 {
+
+      margin: 0 0 10px;
+
+      font-size: 32px;
+
+      line-height: 1.05;
+
+      color: #4b3a2a;
+
+      letter-spacing: 0.3px;
+
+    }
+
+    #header p {
+
+      margin: 0;
+
+      font-family: Arial, sans-serif;
+
+      font-size: 13px;
+
+      line-height: 1.5;
+
+      color: #5d5144;
+
+    }
+
+    /* LEGEND */
+    #legend {
+
+      position: absolute;
+
+      top: 26px;
+      left: 26px;
+
+      background: rgba(241,230,213,0.95);
+
+      padding: 14px;
+
+      border-radius: 12px;
+
+      box-shadow: 0 8px 26px rgba(0,0,0,0.16);
+
+      z-index: 500;
+
+      border: 1px solid rgba(100,80,50,0.15);
+
+      font-family: Arial, sans-serif;
+
+      color: #4c3b2b;
+
+      line-height: 1.7;
+
+      backdrop-filter: blur(4px);
+
+    }
+
+    #legend strong {
+
+      display: block;
+
+      margin-bottom: 8px;
+
+      font-family: Georgia, serif;
+
+      font-size: 16px;
+
+    }
+
+    /* MARKERS */
+    .marker {
+
+      position: absolute;
+
+      width: 18px;
+      height: 18px;
+
+      border-radius: 50%;
+
+      border: 3px solid rgba(255,255,255,0.8);
+
+      transform: translate(-50%, -50%);
+
+      cursor: crosshair;
+
+      z-index: 100;
+
+      transition: filter 0.2s ease;
+
+    }
+
+    .marker:hover {
+
+      filter: brightness(1.18);
+
+    }
+
+    /* PULSE */
+    @keyframes pulse {
+
+      0% {
+        box-shadow: 0 0 0 0 rgba(255,255,255,0.45);
+      }
+
+      70% {
+        box-shadow: 0 0 0 12px rgba(255,255,255,0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(255,255,255,0);
+      }
+
+    }
+
+    .marker {
+
+      animation: pulse 3s infinite;
+
+    }
+
+    /* POPUPS */
+    .popup {
+
+      position: absolute;
+
+      width: 290px;
+
+      background: rgba(248,242,233,0.98);
+
+      border-radius: 12px;
+
+      padding: 14px;
+
+      box-shadow: 0 10px 28px rgba(0,0,0,0.22);
+
+      display: none;
+
+      z-index: 1000;
+
+      border: 1px solid rgba(100,80,50,0.12);
+
+      backdrop-filter: blur(4px);
+
+    }
+
+    .popup img {
+
+      width: 100%;
+
+      border-radius: 8px;
+
+      margin-bottom: 10px;
+
+      object-fit: cover;
+
+    }
+
+    .popup h3 {
+
+      margin: 0 0 8px;
+
+      font-size: 20px;
+
+      color: #49392b;
+
+      line-height: 1.15;
+
+    }
+
+    .popup p {
+
+      margin: 0;
+
+      font-family: Arial, sans-serif;
+
+      font-size: 12px;
+
+      line-height: 1.55;
+
+      color: #5d5144;
+
+    }
+
+    .popup-links {
+
+      margin-top: 12px;
+
+      font-family: Arial, sans-serif;
+
+      font-size: 12px;
+
+      line-height: 1.5;
+
+    }
+
+    .popup a {
+
+      color: #7c5b34;
+
+      text-decoration: none;
+
+      font-weight: bold;
+
+    }
+
+    .popup a:hover {
+
+      text-decoration: underline;
+
+    }
+
+    .friend-links {
+
+      margin-top: 8px;
+
+      padding-top: 8px;
+
+      border-top: 1px solid rgba(100,80,50,0.18);
+
+    }
+
+    /* CLOSE BUTTON */
+    .close-btn {
+
+      position: absolute;
+
+      top: 8px;
+      right: 12px;
+
+      font-size: 20px;
+
+      cursor: pointer;
+
+      color: #6d5b49;
+
+      font-family: Arial, sans-serif;
+
+    }
+
+  </style>
+</head>
+
+<body>
+
+<div id="map-container">
+
+  <div id="zoom-layer">
+
+    <!-- BACKGROUND MAP -->
+    <img
+      id="map-image"
+      src="map.png"
+    >
+
+  </div>
+
+  <!-- HEADER -->
+  <div id="header">
+
+    <h1>
+      The Roosevelt Legacy in the Northeast
+    </h1>
+
+    <p>
+      Mapping how the Roosevelt family shaped conservation, federal power, and the American landscape
+    </p>
+
+  </div>
+
+  <!-- LEGEND -->
+  <div id="legend">
+
+    <strong>Roosevelt Network</strong>
+
+    <div>
+      <span style="color:#355c4d;">●</span>
+      Theodore Roosevelt
+    </div>
+
+    <div>
+      <span style="color:#4f6d8a;">●</span>
+      Franklin D. Roosevelt
+    </div>
+
+    <div>
+      <span style="color:#8a5a7b;">●</span>
+      Eleanor Roosevelt
+    </div>
+
+    <div>
+      <span style="color:#95a35f;">●</span>
+      Frances Perkins
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+const locations = [
+
+  {
+    name: "Theodore Roosevelt Birthplace",
+    x: 50,
+    y: 67,
+    color: "#355c4d",
+
+    image: "https://www.nps.gov/common/uploads/banner_image/ner/homepage/185C0F94-1DD8-B71B-0BC217328653DCAC.jpg",
+
+    description:
+      "The birthplace of Theodore Roosevelt in New York City offers insight into the early life of the 26th president and the origins of his conservation philosophy.",
+
+    link: "https://www.nps.gov/thrb/index.htm",
+
+    friends: [
+      {
+        name: "Theodore Roosevelt Association",
+        link: "https://www.theodoreroosevelt.org/"
+      }
+    ]
+  },
+
+  {
+    name: "Theodore Roosevelt Inaugural Site",
+    x: 28,
+    y: 43,
+    color: "#355c4d",
+
+    image: "https://www.trsite.org/app/uploads/2025/04/Vector_placeholder-1536x1079.jpg",
+
+    description:
+      "This Buffalo site marks Theodore Roosevelt’s assumption of the presidency in 1901 after the assassination of William McKinley.",
+
+    link: "https://www.nps.gov/thri/index.htm",
+
+    friends: [
+      {
+        name: "Theodore Roosevelt Inaugural Site Foundation",
+        link: "https://www.trsite.org/"
+      }
+    ]
+  },
+
+  {
+    name: "Sagamore Hill",
+    x: 54,
+    y: 66,
+    color: "#355c4d",
+
+    image: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/08/a5/dd/69/sagamore-hill.jpg?w=900&h=-1&s=1",
+
+    description:
+      "Sagamore Hill served as Theodore Roosevelt’s home and Summer White House, where he shaped major conservation policies.",
+
+    link: "https://www.nps.gov/sahi/index.htm",
+
+    friends: [
+      {
+        name: "Friends of Sagamore Hill",
+        link: "https://friendsofsagamorehill.org/"
+      },
+      {
+        name: "Theodore Roosevelt Legacy Partnership",
+        link: "https://www.trlegacypartnership.org/"
+      }
+    ]
+  },
+
+  {
+    name: "Home of FDR",
+    x: 51.5,
+    y: 55,
+    color: "#4f6d8a",
+
+    image: "https://npplan.com/wp-content/uploads/2025/03/Home-of-FDR-057.jpg",
+
+    description:
+      "The Hyde Park home of Franklin D. Roosevelt reflects the life of the president who reshaped the role of the federal government during the Great Depression.",
+
+    link: "https://www.nps.gov/hofr/index.htm",
+
+    friends: [
+      {
+        name: "Roosevelt-Vanderbilt Conservancy",
+        link: "https://fdrhydepark.org/"
+      },
+      {
+        name: "Roosevelt-Vanderbilt Historical Association",
+        link: "https://nyheritage.org/organizations/roosevelt-vanderbilt-historical-association"
+      }
+    ]
+  },
+
+  {
+    name: "Eleanor Roosevelt National Historic Site",
+    x: 50.5,
+    y: 55,
+    color: "#8a5a7b",
+
+    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ87bLjL6-EQY-2QtJdbK7HkN-CgHbmqP9XZA&s",
+
+    description:
+      "Val-Kill represents Eleanor Roosevelt’s emergence as a major political and social figure advocating for reform and human rights.",
+
+    link: "https://www.nps.gov/elro/index.htm",
+
+    friends: [
+      {
+        name: "Eleanor Roosevelt Val-Kill Partnership",
+        link: "https://www.valkill.org/"
+      }
+    ]
+  },
+
+  {
+    name: "Campobello Island",
+    x: 80,
+    y: 18,
+    color: "#4f6d8a",
+
+    image: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/24/2f/1d/2f/head-harbour-lightstation.jpg?w=900&h=500&s=1",
+
+    description:
+      "Campobello preserves the summer home where Franklin D. Roosevelt spent formative years that shaped his relationship with nature.",
+
+    link: "https://www.nps.gov/roca/index.htm",
+
+    friends: [
+      {
+        name: "Roosevelt Campobello International Park",
+        link: "https://www.rooseveltcampobello.org/"
+      }
+    ]
+  },
+
+  {
+    name: "Frances Perkins National Monument",
+    x: 72,
+    y: 30,
+    color: "#95a35f",
+
+    image: "https://npca.s3.amazonaws.com/images/19206/fb242425-ffbc-4b84-a755-e32acd55e06f-banner.jpg?1721250547",
+
+    description:
+      "This site honors Frances Perkins, architect of New Deal labor reforms and the first woman to serve in a U.S. presidential cabinet.",
+
+    link: "https://www.nps.gov/frpe/index.htm",
+
+    friends: [
+      {
+        name: "Frances Perkins Center",
+        link: "https://francesperkinscenter.org/"
+      }
+    ]
+  },
+
+  {
+    name: "Acadia National Park",
+    x: 76,
+    y: 24,
+    color: "#355c4d",
+
+    image: "https://upload.wikimedia.org/wikipedia/commons/e/e9/Acadia_National_Park_02.JPG",
+
+    description:
+      "Acadia reflects the broader conservation movement championed during Theodore Roosevelt’s presidency.",
+
+    link: "https://www.nps.gov/acad/index.htm",
+
+    friends: [
+      {
+        name: "Friends of Acadia",
+        link: "https://friendsofacadia.org/"
+      },
+      {
+        name: "Acadia by Carriage",
+        link: "https://acadiabycarriage.com/"
+      }
+    ]
+  }
+
+];
+
+const zoomLayer = document.getElementById("zoom-layer");
+
+locations.forEach(loc => {
+
+  // MARKER
+  const marker = document.createElement("div");
+
+  marker.className = "marker";
+
+  marker.style.left = loc.x + "%";
+  marker.style.top = loc.y + "%";
+
+  marker.style.backgroundColor = loc.color;
+
+  zoomLayer.appendChild(marker);
+
+  // FRIEND LINKS
+  const friendsHTML = loc.friends.map(friend => {
+    return `<div><a href="${friend.link}" target="_blank">${friend.name}</a></div>`;
+  }).join("");
+
+  // POPUP
+  const popup = document.createElement("div");
+
+  popup.className = "popup";
+
+  popup.innerHTML = `
+
+    <div class="close-btn">×</div>
+
+    <h3>${loc.name}</h3>
+
+    <img src="${loc.image}">
+
+    <p>${loc.description}</p>
+
+    <div class="popup-links">
+
+      <div>
+        <a href="${loc.link}" target="_blank">
+          View on NPS Website
+        </a>
+      </div>
+
+      <div class="friend-links">
+
+        <strong>Partner Organizations</strong>
+
+        ${friendsHTML}
+
+      </div>
+
+    </div>
+
+  `;
+
+  zoomLayer.appendChild(popup);
+
+  // OPEN POPUP
+  marker.addEventListener("click", () => {
+
+    document.querySelectorAll(".popup").forEach(p => {
+      p.style.display = "none";
+    });
+
+    popup.style.display = "block";
+
+    let popupWidth = 290;
+    let popupHeight = 360;
+
+    let popupLeft;
+    let popupTop;
+
+    // RIGHT EDGE
+    if (loc.x > 72) {
+
+      popupLeft = `calc(${loc.x}% - ${popupWidth}px)`;
+
+    } else {
+
+      popupLeft = `calc(${loc.x}% + 22px)`;
+
+    }
+
+    // TOP / BOTTOM EDGE
+    if (loc.y < 25) {
+
+      popupTop = `calc(${loc.y}% + 22px)`;
+
+    } else if (loc.y > 70) {
+
+      popupTop = `calc(${loc.y}% - ${popupHeight}px)`;
+
+    } else {
+
+      popupTop = `calc(${loc.y}% - 22px)`;
+
+    }
+
+    popup.style.left = popupLeft;
+    popup.style.top = popupTop;
+
+  });
+
+  // CLOSE POPUP
+  popup.querySelector(".close-btn").addEventListener("click", () => {
+
+    popup.style.display = "none";
+
+  });
+
+});
+
+// ADVANCED ZOOM + PAN
+
+const container = document.getElementById("map-container");
+
+let scale = 1;
+let pointX = 0;
+let pointY = 0;
+
+let isDragging = false;
+let startX;
+let startY;
+
+// APPLY TRANSFORM
+function updateTransform() {
+
+  zoomLayer.style.transform =
+    `translate(${pointX}px, ${pointY}px) scale(${scale})`;
+
+  // KEEP MARKERS SAME VISUAL SIZE
+  document.querySelectorAll(".marker").forEach(marker => {
+
+    marker.style.transform =
+      `translate(-50%, -50%) scale(${1 / scale})`;
+
+  });
+
+  // KEEP POPUPS SAME SIZE
+  document.querySelectorAll(".popup").forEach(popup => {
+
+    popup.style.transform =
+      `scale(${1 / scale})`;
+
+    popup.style.transformOrigin = "top left";
+
+  });
+
+}
+
+// ZOOM TOWARD CURSOR
+container.addEventListener("wheel", (e) => {
+
+  e.preventDefault();
+
+  const xs = (e.clientX - pointX) / scale;
+  const ys = (e.clientY - pointY) / scale;
+
+  const delta = e.deltaY < 0 ? 1.1 : 0.9;
+
+  scale *= delta;
+
+  scale = Math.max(0.8, scale);
+
+  pointX = e.clientX - xs * scale;
+  pointY = e.clientY - ys * scale;
+
+  updateTransform();
+
+});
+
+// DRAG START
+container.addEventListener("mousedown", (e) => {
+
+  isDragging = true;
+
+  startX = e.clientX - pointX;
+  startY = e.clientY - pointY;
+
+});
+
+// DRAG MOVE
+container.addEventListener("mousemove", (e) => {
+
+  if (!isDragging) return;
+
+  pointX = e.clientX - startX;
+  pointY = e.clientY - startY;
+
+  updateTransform();
+
+});
+
+// DRAG END
+container.addEventListener("mouseup", () => {
+
+  isDragging = false;
+
+});
+
+container.addEventListener("mouseleave", () => {
+
+  isDragging = false;
+
+});
+
+</script>
+
+</body>
+</html>
